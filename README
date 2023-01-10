@@ -1,0 +1,142 @@
+===============================================================================
+TEMA 3
+Nume : Vintilescu Andrei-Florin
+Seria : CA
+GRUPA : 312CA
+===============================================================================
+Timp petrecut pe tema: ~40 de ore
+===============================================================================
+Rulare
+
+>Input: 
+	
+#fotografii cu extensia .pgm sau .ppm
+*(aceste fotografii pot fi obtinute folosind utilitarul "convert")
+	SETUP: sudo apt install imagemagick
+	DOCUMENTATIE: man convert
+	UTILIZARE: 
+	convert test.jpg test.ppm (transforma din .jpg in format .ppm binar,
+		color)
+	convert test.jpg test.pgm (transforma din .jpg in format .pgm binar, 
+		greyscale)
+	convert test.jpg -compress None test.ppm (transforma din .jpg in format
+		.ppm plaintext)
+	convert test.jpg -compress None test.pgm (transforma din .jpg in format
+		.pgm plaintext)
+
+#urmatoarele comenzi din fisier:
+	LOAD <fisier>
+	SELECT <x1> <y1> <x2> <y2>
+	SELECT ALL
+	HISTOGRAM <x> <y>
+	EQUALIZE
+	ROTATE <unghi>
+	CROP
+	APPLY <PARAMETRU>
+		<EDGE>
+		<SHARPEN>
+		<BLUR>
+		<GAUSSIAN_BLUR>
+	SAVE <nume_fisier>
+	EXIT
+
+!ATENTIE
+	ALGORITMUL NU TRATEAZA CAZURILE CAND IMAGINEA PRIMITA CA INPUT DE 
+	COMANDA LOAD ESTE IN FORMAT ALB-NEGRU(ADICA CAZUL P1 SAU P4)
+
+
+>Output:
+
+#fotografii modificate cu extensia .pgm sau .ppm, binar sau plaintext in
+functie de preferinta (conversia putand fi facuta din pe loc din afisare)
+
+#un set de mesaje de output dupa fiecare comanda introdusa ce asigura
+interactiunea cu utilizatorul prin transmiterea acestuia ca operatia s-a
+realizat cu succes, ca a avut dificultati sau sa-l atentioneze pe acesta ca
+modul in care a folosit comanda nu este corect.
+===============================================================================
+Structura proiectului
+
+
+
+*Makefile
+>include regulile build si clean
+
+
+
+*index.c
+>este singurul fisier .c al temei si contine intregul algoritm pentru acest
+editor de imagine .ppm sau .pgm
+>fiecarei comanda ii corespunde cate o functie care la randul ei poate fi
+impartita in alte functii pentru a modulariza programul si pentru a-l face mai
+usor de citit.
+
+>comanda LOAD primeste in continuarea ei numele fisierului ce se doreste a fi
+deschis, iar imaginea pe care acesta o stocheaza sa fie atribuita in memorie
+in functie de P-ul din antetul fisierului care ne va directiona catre una
+dintre functiile:
+	#load_P2()
+	#load_P3()
+	#load_P5()
+	#load_P6()
+>fiecare din functiile de mai sus au in comun functia #citeste_antet(), care
+are rolul de a determina tipul de fisier ce trebuie apoi citit, oferind astfel
+informatii despre P-ul fisierului(P2 si P5 fiind pentru formatul .pgm
+plaintext respectiv binar, iar P3 si P6 fiind pentru formatul .ppm
+plaintext respectiv binar), dimensiunile imaginii, acestea fiind 2 valori
+exprimate in pixeli, dar si intensitatea maxima a pixelilor, default in program
+aceasta fiind 255.
+
+>comanda SELECT primeste in continuarea ei 4 valori pozitive numite x1, y1, x2
+si y2, acesta fiind de fapt coltul din stanga sus, respectiv dreapta jos al
+unei selectii de pixeli, pe care mai tarziu se pot face operatii si se pot
+modica.
+>este necesar ca x1 < x2 si y1 < y2, iar aceste valori sa respecte dimensiunile
+maxime ale imaginii
+
+>comanda SELECT ALL seteaza pe x1, y1, x2 si y2 ca fiind de fapt coltul din
+stanga sus al imaginii si coltul din dreapta jos al imaginii(adica selectia
+totala, maxima)
+
+>comanda HISTOGRAM primeste in continuarea ei 2 parametrii x si y iar aceasta
+comanda va afisa in in fisier sub forma desfasurata histograma imaginii folosind
+maxim x stelute si y bin-uri(adica intervale)
+>HISTOGRAMA unei imagini este de fapt un grafic al frecventei aparitiei
+pixelilor de o anumita intensitate facut pe niste intervale stabilite
+
+>comanda EQUALIZE modifica imaginea astfel incat histograma acesteia devine cat
+mai aplatizata posibil. Operatia are loc pe toata imaginea indiferent de
+selectia facuta anterior
+
+>comanda ROTATE primeste in continuarea ei un parametru ce reprezinta unghiul
+de rotire al selectiei ce trebuie sa fie patrata sau daca selectia reprezinta
+de fapt imaginea cu totul se va roti imaginea in sine. Valorile permise pentru
+unghiul de rotatie sunt +-90, +-180, +-170, +-360 sau 0
+
+>comanda CROP are rolul de a atribui in locul imaginii selectia de pixeli 
+presetata(adica se va taia imaginea si va ramane doar ultima selectie de
+pixeli). Dupa ce operatia se realizeaza cu succes valorile lui x1, y1, x2, y2
+vor deveni de fapt colturile din stanga sus respectiv dreapta jos al noii
+imagini
+
+>comanda APPLY primeste in continuarea ei un parametru ce poate fi: EDGE,
+SHARPEN, BLUR sau GAUSSIAN_BLUR, fiecare dintre aceste filtre de imagine
+putand fi aplicate peste selectia curenta
+
+>comanda SAVE primeste ca parametru numele fisierului cat si metoda prin
+care se doreste a fi salvat fisierul(aceasta fiind ascii, adica plaintext sau
+binar, daca locul parametrului ce specifica metoda este gol). In cazul in care
+se specifica metoda "ascii" atunci se va crea un fisier text in care se vor
+afisa antetul convertit pentru formatul ascii dar si matricea mixelilor, 
+reprezentata de numere intregi pozitive mai mici decat intensitatea maxima
+permisa. In caz contrat, daca metoda ascii nu apare in comanda, atunci se va
+crea un fisier binar in care se va afisa in format text antetul imaginii, cu
+P-ul convertit pentru format binar(P5 sau P6), iar mai jos se va afisa matricea
+pixelilor in format binar pe tipul de date unsigned char.
+
+>comanda EXIT are rolul de a dealoca resursele programului(vectori, matrici)
+ce au fost declarate dinamic pentru a gestiona mai bine memoria si pentru a
+permite lucrul cu imagini foarte mari si operatii complexe. In cazul in care
+in memorie nu este atribuita nicio imagine programul va afisa mesajul "No image
+loaded", iar in caz contrat programul se va inchide.
+===============================================================================
